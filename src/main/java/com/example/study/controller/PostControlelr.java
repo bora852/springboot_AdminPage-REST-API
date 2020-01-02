@@ -1,11 +1,10 @@
 package com.example.study.controller;
 
-import com.example.study.model.network.Header;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api") //localhost:8080/api
-public class GetControlelr {
+@RequestMapping("/post") //localhost:8080/api
+public class PostControlelr {
 
     @RequestMapping(method = RequestMethod.GET, path = "/getMethod") //localhost:8080/api/getMethod
     public String getRequest(){
@@ -17,12 +16,6 @@ public class GetControlelr {
         System.out.println("id : "+ id +", password : " + password);
 
         return id+password;
-    }
-
-
-    @GetMapping("/header")
-    public Header getHeader(){
-        return Header.builder().resultCode("OK").description("OK").build();
     }
 
 
