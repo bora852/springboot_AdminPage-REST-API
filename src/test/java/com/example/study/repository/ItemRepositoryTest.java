@@ -17,11 +17,11 @@ public class ItemRepositoryTest extends StudyApplicationTests {
     @Test
     public void create(){
         Item item = new Item();
-        item.setStatus("unreg");
+//        item.setStatus("unreg");
         item.setName("노트북");
         item.setTitle("삼성 노트북");
         item.setContent("2020년형");
-        item.setPrice(100000);
+//        item.setPrice(100000);
         item.setRegisteredAt(LocalDateTime.now());
         item.setCreatedAt(LocalDateTime.now());
         item.setCreatedBy("partner01");

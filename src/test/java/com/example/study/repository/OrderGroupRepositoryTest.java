@@ -18,7 +18,7 @@ public class OrderGroupRepositoryTest extends StudyApplicationTests {
     public void create(){
         OrderGroup orderGroup = new OrderGroup();
         orderGroup.setStatus("waiting");
-        orderGroup.setOrderType("all");
+//        orderGroup.setOrderType("all");
         orderGroup.setRevAddress("서울시");
         orderGroup.setRevName("보라");
         orderGroup.setPaymentType("card");

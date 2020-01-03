@@ -2,6 +2,7 @@ package com.example.study.service;
 
 import com.example.study.ifs.CrudInterface;
 import com.example.study.model.entity.User;
+import com.example.study.model.enumclass.UserStatus;
 import com.example.study.model.network.Header;
 import com.example.study.model.network.request.UserApiRequest;
 import com.example.study.model.network.response.UserApiResponse;
@@ -29,7 +30,7 @@ public class UserApiLogicService implements CrudInterface<UserApiRequest, UserAp
         User user = User.builder()
                 .account(body.getAccount())
                 .password(body.getPassword())
-                .status("REG")
+                .status(UserStatus.REGISTERED)
                 .phoneNumber(body.getPhoneNumber())
                 .email(body.getEmail())
                 .registeredAt(LocalDateTime.now())
@@ -79,7 +80,13 @@ public class UserApiLogicService implements CrudInterface<UserApiRequest, UserAp
 
     @Override
     public Header delete(Long id) {
-        return null;
+        Optional<User> optional = userRepository.findById(id);
+
+        return optional.map(user -> {
+            userRepository.delete(user);
+            return Header.OK();
+        })
+        .orElseGet(()->Header.ERROR("데이터없음"));
     }
 
     public Header<UserApiResponse> response(User user){
