@@ -10,6 +10,7 @@ import com.example.study.model.network.response.OrderGroupApiResponse;
 import com.example.study.model.network.response.UserApiResponse;
 import com.example.study.repository.OrderGroupRepository;
 import com.example.study.repository.UserRepository;
+import jdk.javadoc.internal.doclets.formats.html.markup.Head;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,23 +49,45 @@ public class OrderGroupApiLogicService extends BaseService<OrderGroupApiRequest,
 
     @Override
     public Header<OrderGroupApiResponse> read(Long id) {
-        return null;
+        return baseRepository.findById(id)
+                .map(this::response)
+                .orElseGet(()-> Header.ERROR("데이터 없음"));
     }
 
     @Override
     public Header<OrderGroupApiResponse> update(Header<OrderGroupApiRequest> req) {
-        return null;
+
+        OrderGroupApiRequest body = req.getData();
+        return baseRepository.findById(body.getId())
+                .map(orderGroup -> {
+
+                    orderGroup
+                            .setStatus(body.getStatus())
+                            .setOrderType(body.getOrderType())
+                            .setRevAddress(body.getRevAddress())
+                            .setRevName(body.getRevName())
+                            .setPaymentType(body.getPaymentType())
+                            .setTotalPrice(body.getTotalPrice())
+                            .setTotalQuantity(body.getTotalQuantity())
+                            .setOrderAt(body.getOrderAt())
+                            .setArrivalDate(body.getArrivalDate())
+                            .setUser(userRepository.getOne(body.getUserId()))
+                            ;
+                    return orderGroup;
+                })
+                .map(chageOrderGroup -> baseRepository.save(chageOrderGroup))
+                .map(this::response)
+                .orElseGet(()->Header.ERROR("데이터 없음"));
     }
 
     @Override
     public Header delete(Long id) {
-        Optional<User> optional = userRepository.findById(id);
-
-        return optional.map(user -> {
-            userRepository.delete(user);
-            return Header.OK();
-        })
-        .orElseGet(()->Header.ERROR("데이터없음"));
+        return baseRepository.findById(id)
+                .map(orderGroup -> {
+                        baseRepository.delete(orderGroup);
+                        return Header.OK();
+                 })
+                .orElseGet(()->Header.ERROR("데이터없음"));
     }
 
     public Header<OrderGroupApiResponse> response(OrderGroup orderGroup){
