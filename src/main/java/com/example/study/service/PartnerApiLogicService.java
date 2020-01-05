@@ -26,7 +26,9 @@ public class PartnerApiLogicService extends BaseService<PartnerApiRequest, Partn
 
     @Override
     public Header<PartnerApiResponse> read(Long id) {
-        return null;
+        return baseRepository.findById(id)
+                .map(partner -> response(partner))
+                .orElseGet(()->Header.ERROR("데이터 없음"));
     }
 
     @Override
@@ -37,5 +39,23 @@ public class PartnerApiLogicService extends BaseService<PartnerApiRequest, Partn
     @Override
     public Header delete(Long id) {
         return null;
+    }
+
+    private Header<PartnerApiResponse> response(Partner partner){
+        PartnerApiResponse body = PartnerApiResponse.builder()
+                .id(partner.getId())
+                .name(partner.getName())
+                .status(partner.getStatus())
+                .address(partner.getAddress())
+                .callCenter(partner.getCallCenter())
+                .partnerNumber(partner.getPartnerNumber())
+                .businessNumber(partner.getBusinessNumber())
+                .ceoName(partner.getCeoName())
+                .registeredAt(partner.getRegisteredAt())
+                .unregisteredAt(partner.getUnregisteredAt())
+                .categoryId(partner.getCategory().getId())
+                .build();
+
+        return Header.OK(body);
     }
 }
