@@ -24,7 +24,6 @@ public class OrderGroupApiLogicService extends BaseService<OrderGroupApiRequest,
     @Autowired
     private UserRepository userRepository;
 
-
     @Override
     public Header<OrderGroupApiResponse> create(Header<OrderGroupApiRequest> req) {
 
@@ -44,13 +43,14 @@ public class OrderGroupApiLogicService extends BaseService<OrderGroupApiRequest,
 
         OrderGroup newOrderGroup = baseRepository.save(orderGroup);
 
-        return response(newOrderGroup);
+        return Header.OK(response(newOrderGroup));
     }
 
     @Override
     public Header<OrderGroupApiResponse> read(Long id) {
         return baseRepository.findById(id)
                 .map(this::response)
+                .map(Header::OK)
                 .orElseGet(()-> Header.ERROR("데이터 없음"));
     }
 
@@ -60,7 +60,6 @@ public class OrderGroupApiLogicService extends BaseService<OrderGroupApiRequest,
         OrderGroupApiRequest body = req.getData();
         return baseRepository.findById(body.getId())
                 .map(orderGroup -> {
-
                     orderGroup
                             .setStatus(body.getStatus())
                             .setOrderType(body.getOrderType())
@@ -77,6 +76,7 @@ public class OrderGroupApiLogicService extends BaseService<OrderGroupApiRequest,
                 })
                 .map(chageOrderGroup -> baseRepository.save(chageOrderGroup))
                 .map(this::response)
+                .map(Header::OK)
                 .orElseGet(()->Header.ERROR("데이터 없음"));
     }
 
@@ -90,7 +90,8 @@ public class OrderGroupApiLogicService extends BaseService<OrderGroupApiRequest,
                 .orElseGet(()->Header.ERROR("데이터없음"));
     }
 
-    public Header<OrderGroupApiResponse> response(OrderGroup orderGroup){
+    @Override
+    public OrderGroupApiResponse response(OrderGroup orderGroup){
         // user -> userApiResponse
         OrderGroupApiResponse res = OrderGroupApiResponse.builder()
                 .id(orderGroup.getId())
@@ -107,6 +108,6 @@ public class OrderGroupApiLogicService extends BaseService<OrderGroupApiRequest,
                 .build();
 
         //Header + Data return
-        return Header.OK(res);
+        return res;
     }
 }

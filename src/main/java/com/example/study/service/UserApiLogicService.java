@@ -25,10 +25,7 @@ import java.util.stream.Collectors;
 
 
 @Service
-public class UserApiLogicService implements CrudInterface<UserApiRequest, UserApiResponse> {
-
-    @Autowired
-    private UserRepository userRepository;
+public class UserApiLogicService extends BaseService<UserApiRequest, UserApiResponse, User> {
 
     @Autowired
     private OrderGroupApiLogicService orderGroupApiLogicService;
@@ -51,7 +48,7 @@ public class UserApiLogicService implements CrudInterface<UserApiRequest, UserAp
                 .email(body.getEmail())
                 .registeredAt(LocalDateTime.now())
                 .build();
-        User newUser = userRepository.save(user);
+        User newUser = baseRepository.save(user);
 
         //3. 생성된 데이터 -> UserApiResponse Return
         return Header.OK(response(newUser));
@@ -60,13 +57,10 @@ public class UserApiLogicService implements CrudInterface<UserApiRequest, UserAp
     @Override
     public Header<UserApiResponse> read(Long id) {
 
-        return userRepository.findById(id)
+        return baseRepository.findById(id)
                 .map(user -> response(user))
-                //.map(userApiResponse -> Header.OK(userApiResponse))
                 .map(Header::OK)
-                .orElseGet(
-                        () -> Header.ERROR("데이터 없음")
-                );
+                .orElseGet(() -> Header.ERROR("데이터 없음"));
     }
 
     @Override
@@ -75,7 +69,7 @@ public class UserApiLogicService implements CrudInterface<UserApiRequest, UserAp
         UserApiRequest userApiRequest = request.getData();
 
         // 2. id -> user 데이터 를 찾고
-        Optional<User> optional = userRepository.findById(userApiRequest.getId());
+        Optional<User> optional = baseRepository.findById(userApiRequest.getId());
 
         return optional.map(user -> {
             // 3. data -> update
@@ -91,7 +85,7 @@ public class UserApiLogicService implements CrudInterface<UserApiRequest, UserAp
             return user;
 
         })
-                .map(user -> userRepository.save(user))             // update -> newUser
+                .map(user -> baseRepository.save(user))             // update -> newUser
                 .map(user -> response(user))
                 .map(Header::OK)
                 .orElseGet(()->Header.ERROR("데이터 없음"));
@@ -99,10 +93,10 @@ public class UserApiLogicService implements CrudInterface<UserApiRequest, UserAp
 
     @Override
     public Header delete(Long id) {
-        Optional<User> optional = userRepository.findById(id);
+        Optional<User> optional = baseRepository.findById(id);
 
         return optional.map(user -> {
-            userRepository.delete(user);
+            baseRepository.delete(user);
             return Header.OK();
         })
         .orElseGet(()->Header.ERROR("데이터없음"));
@@ -127,7 +121,7 @@ public class UserApiLogicService implements CrudInterface<UserApiRequest, UserAp
 
     public Header<List<UserApiResponse>> search(Pageable pageable) {
 
-        Page<User> users = userRepository.findAll(pageable);
+        Page<User> users = baseRepository.findAll(pageable);
 
         List<UserApiResponse> userApiResponseList = users.stream()
                 .map(user -> response(user))
@@ -145,19 +139,19 @@ public class UserApiLogicService implements CrudInterface<UserApiRequest, UserAp
 
     public Header<UserOrderInfoApiResponse> orderInfo(Long id) {
         //user
-        User user = userRepository.getOne(id);
+        User user = baseRepository.getOne(id);
         UserApiResponse userApiResponse = response(user);
 
         //orderGroup
         List<OrderGroup> orderGroupList = user.getOrderGroupList();
         List<OrderGroupApiResponse> orderGroupApiResponseList = orderGroupList.stream()
                 .map(orderGroup -> {
-                    OrderGroupApiResponse orderGroupApiResponse = orderGroupApiLogicService.response(orderGroup).getData();
+                    OrderGroupApiResponse orderGroupApiResponse = Header.OK(orderGroupApiLogicService.response(orderGroup)).getData();
 
                     //item api response
                     List<ItemApiResponse> itemApiResponseList = orderGroup.getOrderDetailList().stream()
                             .map(detail -> detail.getItem())
-                            .map(item -> itemApiLogicService.response(item).getData())
+                            .map(item -> Header.OK(itemApiLogicService.response(item)).getData())
                             .collect(Collectors.toList());
 
                     orderGroupApiResponse.setItemApiResponseList(itemApiResponseList);
