@@ -17,29 +17,56 @@ import java.time.LocalDateTime;
 @Service
 public class CategoryApiLogicService extends BaseService<CategoryApiRequest, CategoryApiResponse, Category>{
 
-
     @Override
     public CategoryApiResponse response(Category category) {
-        return null;
+        CategoryApiResponse body = CategoryApiResponse.builder()
+                .id(category.getId())
+                .type(category.getType())
+                .title(category.getTitle())
+                .build();
+        return body;
     }
 
     @Override
     public Header<CategoryApiResponse> create(Header<CategoryApiRequest> req) {
-        return null;
+        CategoryApiRequest body = req.getData();
+        Category category = Category.builder()
+                .type(body.getType())
+                .title(body.getTitle())
+                .build();
+        Category newCategory = baseRepository.save(category);
+        return Header.OK(response(newCategory));
     }
 
     @Override
     public Header<CategoryApiResponse> read(Long id) {
-        return null;
+        return baseRepository.findById(id)
+                .map(this::response)
+                .map(Header::OK)
+                .orElseGet(()->Header.ERROR("데이터 없음"));
     }
 
     @Override
     public Header<CategoryApiResponse> update(Header<CategoryApiRequest> req) {
-        return null;
+        CategoryApiRequest body = req.getData();
+        return baseRepository.findById(body.getId())
+                .map(category -> {
+                    category.setType(body.getType())
+                            .setTitle(body.getTitle());
+                    return category;
+                })
+                .map(this::response)
+                .map(Header::OK)
+                .orElseGet(()->Header.ERROR("데이터 없음"));
     }
 
     @Override
     public Header delete(Long id) {
-        return null;
+        return baseRepository.findById(id)
+                .map(category -> {
+                    baseRepository.delete(category);
+                    return Header.OK();
+                })
+                .orElseGet(()->Header.ERROR("데이터 없음"));
     }
 }
